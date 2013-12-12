@@ -16,43 +16,93 @@
 #define XMAKESTR(x) MAKESTR(x)
 #define ALGO_INCLUDE XMAKESTR(ALGO_FILE)
 
-#define XXONE_STEP(X) X ## _one_step
-#define XONE_STEP(X) XXONE_STEP(X)
-#define ONE_STEP XONE_STEP(ALGORITHM_SHORT_NAME)
+#define XAPPEND_TO_NAME(X,Y) X ## Y
+#define APPEND_TO_NAME(X,Y) XAPPEND_TO_NAME(X,Y)
 
-#define XXGET_LEXP(X) X ## _get_lexp
-#define XGET_LEXP(X) XXGET_LEXP(X)
-#define GET_LEXP XGET_LEXP(ALGORITHM_SHORT_NAME)
+#define ONE_STEP APPEND_TO_NAME(ALGORITHM_SHORT_NAME, _one_step)
+#define GET_LEXP APPEND_TO_NAME(ALGORITHM_SHORT_NAME, _get_lexp)
+#define RANDOM_POINT APPEND_TO_NAME(ALGORITHM_SHORT_NAME, _random_point)
+#define DOMAIN APPEND_TO_NAME(ALGORITHM_SHORT_NAME, _domain_extremal_pts)
+#define DOMAIN_NB APPEND_TO_NAME(ALGORITHM_SHORT_NAME, _domain_pts_nb)
 
 #define PREAMBLE
 #include ALGO_INCLUDE
 #undef PREAMBLE
 
-/* macro for permutations x < y < z */
-#define PERMUTE_xyz            \
-if(y > z)                      \
-{                              \
-	s=z; t=w;                  \
-	z=y; w=v;                  \
-	y=s; v=t;                  \
-}                              \
-if(x > z)                      \
-{                              \
-	s=x; t=u;                  \
-	x=y; u=v;                  \
-	y=z; v=w;                  \
-	z=s; w=t;                  \
-}                              \
-else if(x > y)                 \
-{                              \
-	s=y; t=v;                  \
-	y=x; v=u;                  \
-	x=s; u=t;                  \
+/* macro for sorting and permutations of coordinates           */
+/* Warning: as you may notice, this needs an extra variables s */
+#define SORT_xyz         \
+if(y > z)                \
+{                        \
+	s=z; z=y; y=s;       \
+	s=w; w=v; v=s;       \
+}                        \
+if(x > z)                \
+{                        \
+	s=x; x=y; y=z; z=s;  \
+	s=u; u=v; v=w; w=s;  \
+}                        \
+else if(x > y)           \
+{                        \
+	s=y; y=x; x=s;       \
+	s=v; v=u; u=s;       \
+}
+
+#define PERMUTE_yxz {\
+s=x; x=y; y=x;      \
+s=u; u=v; v=s;}
+
+#define PERMUTE_zyx {\
+s=x; x=z; z=s;      \
+s=u; u=w; w=s;}
+
+#define PERMUTE_xzy {\
+s=y; y=z; z=s;      \
+s=v; v=w; w=s;}
+
+#define PERMUTE_yzx {\
+s=x; x=y; y=z; z=s;  \
+s=u; u=v; v=w; w=s;} \
+
+#define PERMUTE_zxy {\
+s=x; x=z; z=y; y=s;  \
+s=u; u=w; w=v; v=s;}
+
+const double DOMAIN[] = {EXTREMAL_PTS};
+const unsigned int DOMAIN_NB = NB_EXTREMAL_PTS;
+
+Point3d RANDOM_POINT(void)
+{
+	double ratios[NB_EXTREMAL_PTS];
+	double s;
+	unsigned int i;
+	Point3d p;
+
+	for(i=0; i <NB_EXTREMAL_PTS; ++i) ratios[i] = drand();
+
+	p = Point3d_new();
+	p->x = p->y = p->z = 0;
+	for(i=0; i<NB_EXTREMAL_PTS; ++i)
+	{
+		p->x += ratios[i] * DOMAIN[3*i];
+		p->y += ratios[i] * DOMAIN[3*i+1];
+		p->z += ratios[i] * DOMAIN[3*i+2];
+	}
+	s = p->x + p->y + p->z;
+	p->x /= s; p->y /= s; p->z /= s;
+
+	p->u = drand(); p->v = drand(); p->w = drand();
+	s = p->x * p->u + p->y * p->v + p->z * p->w;
+	p->u -= s; p->v -= s; p->w -= s;
+	s = fabs(p->u) + fabs(p->v) + fabs(p->w);
+	p->u /= s; p->v /= s; p->w /= s;
+
+	return p;
 }
 
 void ONE_STEP(Point3d P)
 {
-	double s,t;
+	double s;
 	#define EXTRA_VARIABLES
 	#include ALGO_INCLUDE
 	#undef EXTRA_VARIABLES
@@ -76,8 +126,9 @@ void ONE_STEP(Point3d P)
 
 void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 {
+	Point3d p;
 	double x,y,z,u,v,w;           /*(x,y,z) and (u,v,w) are the two vectors used */
-	double s,t;                   /* temporary double variables  */
+	double s;                     /* temporary double variables  */
 	int i;                        /* loop counter */
 	double theta1=0, theta2=0;    /* values of Lyapunov exponents */
 
@@ -85,31 +136,10 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 	#include ALGO_INCLUDE
 	#undef EXTRA_VARIABLES
 
-	x = drand(); y = drand(); z = drand();
-	u = drand() - .5; v = drand() - .5; w = drand() - .5;
-
-	#ifdef ORDERED
-	/* order and normalize (x,y,z) to get */
-	/*  1) 0 < x < y < z                  */
-	/*  2) x + y + z = 1                  */
-	if(y > z) {t=z; z=y; y=t;}
-	if(x > z) {t=x; x=y; y=z; z=t;}
-	else if(x > y) {t=y; y=x; x=t;}
-	#endif
-
-	#define PREPROCESS
-	#include ALGO_INCLUDE
-	#undef PREPROCESS
-
-	s = x+y+z;
-	x /= s; y /= s; z /= s;
-
-	/* normalize (u,v,w) */
-	t = x*u + y*v + z*w;
-	s = x*x + y*y + z*z;
-	u -= t*x/s; v -= t*y/s; w -= t*z/s;
-	s = fabs(u) + fabs(v) + fabs(w);  /* WARNING: abs is for int and fabs for double !!! */
-	u /= s; v /= s; w /= s;
+	p = RANDOM_POINT();
+	x = p->x; y = p->y; z = p->z;
+	u = p->u; v = p->v; w = p->w;
+	Point3d_free(&p);
 
 #ifdef VERBOSE
 	printf("u=%f, v=%f, w=%f\n",u,v,w);
@@ -138,44 +168,18 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 			{
 				fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
 				fprintf(stderr, "Error: one of the length is 0: x=%f, y=%f, z=%f",x,y,z);
-				exit(EXIT_FAILURE);
 			}
 			s = x*u + y*v + z*w;
 			if ((s > 0.0001) || (s < -0.0001))
 			{
 			    fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
 			    fprintf(stderr, "Error: scal prod <(x,y,z),(u,v,w)> =%f is not zero\n",s);
-			    exit(EXIT_FAILURE);
-			}
-#endif
-
-
-#if VERBOSE > 2
-			printf("\nx=%f, y=%f, z=%f\n",x,y,z);
-			printf("u=%f, v=%f, w=%f\n",u,v,w);
-			s = x*u + y*v + z*w;
-			printf("scal prod after permutation <(x,y,z),(u,v,w)> = %f\n",s);
-#endif
-#ifdef ASSERT
-			s = x*u + y*v + z*w;
-			if ((s > 0.0001) || (s < -0.0001))
-			{
-			    fprintf(stderr, "Error: After %d-th application of algorithm\n",i);
-			    fprintf(stderr, "Error: After permutation of entries\n");
-			    fprintf(stderr, "Error: scal prod <(x,y,z),(u,v,w)> =%f is not zero\n",s);
-			    exit(EXIT_FAILURE);
 			}
 #endif
 		}
 
 		/* renormalization (using Kahan summation algorithm) */
 		/* does not depend on the cf algorithm               */
-#ifdef VERBOSE
-		printf("Renormalization after %d-th application of algorithm\n",i);
-		printf("x=%f, y=%f, z=%f\n",x,y,z);
-		printf("u=%f, v=%f, w=%f\n",u,v,w);
-#endif
-
 		s = x+y+z;
 		theta1 -= log(s);
 
@@ -191,18 +195,11 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 
 		s = fabs(u) + fabs(v) + fabs(w);
 		theta2 += log(s);
-
-		/* the following gramm shimdts seems to be useless, but it is not!!! */
-		t = x*u + y*v + z*w;
-		s = x*x + y*y + z*z;
-		u -= t*x/s; v -= t*y/s; w -= t*z/s;
-		s = fabs(u) + fabs(v) + fabs(w);
 		u /= s; v /= s; w /= s;
 
-#ifdef VERBOSE
-		printf("x=%f, y=%f, z=%f\n",x,y,z);
-		printf("u=%f, v=%f, w=%f\n",u,v,w);
-#endif
+		/* the following orthogonalization seems useless, but it is not!!! */
+		s = x*u + y*v + z*w;
+		u -= s; v -= s; w -= s;
 
 #ifdef ASSERT
 		if ((x < CRITICAL_VALUE) && (y  < CRITICAL_VALUE) && (z < CRITICAL_VALUE))
@@ -210,7 +207,7 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 		    fprintf(stderr, "Error: After %d-th application of the algorithm.\n",i);
 		    fprintf(stderr, "Error: The renormalization on the vector did not worked.\n");
 		    fprintf(stderr, "Error: We stop otherwise, we get an infinite loop.\n");
-		    exit(EXIT_FAILURE);
+			break;
 		}
 #endif
 	}

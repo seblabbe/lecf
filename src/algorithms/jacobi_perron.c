@@ -6,22 +6,24 @@
 #ifdef PREAMBLE
 #define ALGORITHM_SHORT_NAME jacobi_perron
 #define ALGORITHM_FULL_NAME Jacobi-Perron
+#define NB_EXTREMAL_PTS 4
+#define EXTREMAL_PTS 0,0,1, 1,0,1, 1,1,1, 0,1,1
 #endif
 
 #ifdef EXTRA_VARIABLES
-double m,n;
+double r,m,n;
 #endif
 
 #ifdef ALGORITHM
-s = x;
-m = floor(y / s);
-n = floor(z / s);
-x = y - m*s;
-y = z - n*s;
-z = s;
+r = x;
+m = floor(y / r);
+n = floor(z / r);
+x = y - m*r;
+y = z - n*r;
+z = r;
 
-s = w;
+r = w;
 w = u + m*v + n*w;
 u = v;
-v = s;
+v = r;
 #endif

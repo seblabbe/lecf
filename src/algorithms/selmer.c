@@ -7,41 +7,13 @@
 #define ORDERED
 #define ALGORITHM_SHORT_NAME selmer
 #define ALGORITHM_FULL_NAME (multiplicative floor) Selmer
-#endif
-
-#ifdef PREPROCESS
-/* by default, the initial value belongs to the simplex  */
-/* x < y < z. As Selmer has an extra condition, we first */
-/* refined to that smaller simplex                       */
-while(z > x + y)
-{
-z -= x;
-}
-#endif
-
-#ifdef EXTRA_VARIABLES
+#define NB_EXTREMAL_PTS 3
+#define EXTREMAL_PTS 1,1,2, 0,1,1, 1,1,1
 #endif
 
 #ifdef ALGORITHM
-#ifdef ASSERT
-if(z > x+y) fprintf(stderr, "Error in Selmer z > x+y\n");
-#endif
-z = z - x;
-u = u + w;
-#ifdef ASSERT
-if(z > y) fprintf(stderr, "Error in Selmer x > y");
-#endif
-if(z > x)
-{
-	s = z; t = w;
-	z = y; w = v;
-	y = s; v = t;
-}
-else
-{
-	s = z; t = w;
-	z = y; w = v;
-	y = x; v = u;
-	x = s; u = t;
-}
+z -= x;
+u +=  w;
+if(z > x) {PERMUTE_xzy;}   // x,y,z = x,z,y
+else {PERMUTE_zxy;}        // x,z,y = z,x,y
 #endif

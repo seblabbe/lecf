@@ -12,26 +12,26 @@ cdef extern from "point3d.h":
 cdef extern from "mcf_template.h":
     ctypedef void (*get_lexp_type)(double * lexp1, double *, unsigned int nb_iterations)
     ctypedef void (*one_step_type)(Point3d)
+    ctypedef Point3d (*random_point_type)()
 
     cdef struct Xcfa:
         get_lexp_type get_lexp
         one_step_type one_step
+        random_point_type random_point
         char * description
+        double * extremal_pts
+        unsigned int extremal_pts_nb
     ctypedef Xcfa * cfa
 
     cfa get_cfa_from_name(char * name)
     char ** list_of_algorithms()
     unsigned int number_of_algorithms()
 
-cdef extern from "mcf_algorithms.h":
-    void brun_mf_get_lexp(double *, double *, unsigned int)
-    void brun_mf_one_step(Point3d p)
-
-    void jacobi_perron_get_lexp(double *, double *, unsigned int)
-    void jacobi_perron_one_step(Point3d p)
-
 cdef class MCFAlgorithm(object):
     cdef get_lexp_type _get_lexp
     cdef one_step_type _one_step
+    cdef random_point_type _random_point
+    cdef double * _extremal_pts
+    cdef unsigned int _extremal_pts_nb
     cdef str _short_name
     cdef str _description

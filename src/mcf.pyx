@@ -30,6 +30,42 @@ AUTHORS:
 from libc.stdlib cimport malloc, free
 from libc.string cimport memset
 
+def project2d(p):
+    from math import cos,sin,pi
+    c0 = 1.; s0 = 0.
+    c1 = cos(2*pi/3); s1 = sin(2*pi/3)
+    c2 = cos(-2*pi/3); s2 = sin(-2*pi/3)
+
+    return (p[0]*c0 + p[1]*c1 + p[2]*c2, p[0]*s0 + p[1]*s1 + p[2]*s2)
+
+def get_side(a, b):
+    x = a[0]*b[1] - a[1]*b[0]
+    if x < 0:
+        return 0
+    elif x > 0:
+        return 1
+    else:
+        return None
+
+def inside_convex_polygon(point, vertices):
+    r"""
+    Check whether ``point`` is inside the convex hull of ``vertices``.
+    """
+    previous_side = None
+    n_vertices = len(vertices)
+    for n in xrange(n_vertices):
+        a, b = vertices[n], vertices[(n+1)%n_vertices]
+        affine_segment = (b[0]-a[0], b[1]-a[1])
+        affine_point = (point[0]-a[0], point[1]-a[1])
+        current_side = get_side(affine_segment, affine_point)
+        if current_side is None:
+            return False #outside or over an edge
+        elif previous_side is None: #first segment
+            previous_side = current_side
+        elif previous_side != current_side:
+            return False
+    return True
+
 def algorithm_names():
     cdef char ** algos = list_of_algorithms()
     l = []
@@ -39,11 +75,10 @@ def algorithm_names():
 
 # clean
 cdef class MCFAlgorithm(object):
-    def __init__(self, name=None):
+    def __init__(self, name=None, check=True):
 
         assert isinstance(name, str)
         cdef cfa c = get_cfa_from_name(name)
-
         if c is NULL:
             raise ValueError("no algorithm named %s. Must be one of: %s"%(name, ', '.join(algorithm_names())))
 
@@ -51,8 +86,66 @@ cdef class MCFAlgorithm(object):
         self._description = c.description
         self._get_lexp = c.get_lexp
         self._one_step = c.one_step
+        self._random_point = c.random_point
+        self._extremal_pts = c.extremal_pts
+        self._extremal_pts_nb = c.extremal_pts_nb
 
         free(c)
+
+        if check:
+            self._check()
+
+    def domain_extremal_pts(self):
+        cdef unsigned int i
+        result = []
+        for i in xrange(self._extremal_pts_nb):
+            result.append((self._extremal_pts[3*i],
+                           self._extremal_pts[3*i+1],
+                           self._extremal_pts[3*i+2]))
+        return result
+
+    def _check(self):
+        r"""
+        Do some check to test consistency of the algorithm.
+        """
+        cdef Point3d P
+        cdef double s
+        cdef int i
+
+        dom = map(project2d, self.domain_extremal_pts())
+
+        for i in range(100):
+            P = self._random_point()
+            s = P.x * P.u + P.y * P.v + P.z * P.w
+            if s < -0.000001 or s > 0.000001:
+                raise AssertionError("scalar product is not 0 for random point =%s"%((P.x,P.y,P.z),))
+            if not inside_convex_polygon(project2d((P.x, P.y, P.z)), dom):
+                raise AssertionError("random point (=%s) not inside the domain"%((P.x, P.y, P.z),))
+
+            Point3d_free(&P)
+
+        P = self._random_point()
+        import sys
+        sys.stdout.flush()
+
+        for i in range(1000):
+            self._one_step(P)
+            if not inside_convex_polygon(project2d((P.x,P.y,P.z)), dom):
+                raise AssertionError("point (=%s) out of the domain after %d steps"%((P.x,P.y,P.z),i))
+            s = P.x * P.u + P.y * P.v + P.z * P.w
+            if P.x <= 0 or P.y <= 0 or P.z <= 0:
+                raise AssertionError("one of the coordinate become null after %d steps"%i)
+            if s < -0.000001 or s > 0.000001:
+                raise AssertionError("orthogonality not preserved by the algo")
+
+            if i%10 == 9:
+                s = P.x + P.y + P.z
+                P.x /= s; P.y /= s; P.z /= s
+
+                s = P.x * P.u + P.y * P.v + P.z * P.w
+                P.u -= s; P.v -= s; P.w -= s
+
+        Point3d_free(&P)
 
     def name(self):
         return self._short_name
@@ -60,36 +153,14 @@ cdef class MCFAlgorithm(object):
     def long_name(self):
         return self._description
 
-    def specifications(self):
+    def info(self):
         r"""
-        Return the domain and the specification of the algorithm.
+        Return some information about the algorithm.
         """
         raise NotImplementedError
 
     def __repr__(self):
         return self.long_name()
-
-    def _check(self):
-        r"""
-        Do some check to test consistency of the algorithm.
-        """
-        cdef Point3d P = Point3d_new()
-        cdef double s
-        cdef int i
-
-        Point3d_set_random(P)
-
-        s = P.x * P.u + P.y * P.v + P.z * P.w
-        if s < -0.000001 or s > 0.000001:
-            raise AssertionError("scalar product is not 0 after Point3d_set_random")
-
-        for i in range(100):
-            self._one_step(P)
-            s = P.x * P.u + P.y * P.v + P.z * P.w
-            if s < -0.000001 or s > 0.000001:
-                raise AssertionError("orthogonality not preserved by the algo")
-
-        Point3d_free(&P)
 
     def lyapunov_exponents(self,
             unsigned int n_iterations=10000,
@@ -113,7 +184,7 @@ cdef class MCFAlgorithm(object):
         theta1 = <double *> malloc(n_experiments * sizeof(double))
         theta2 = <double *> malloc(n_experiments * sizeof(double))
 
-        m1 = m2 = 0
+        m = m1 = m2 = 0
         for i in range(n_experiments):
             self._get_lexp(theta1 + i, theta2 + i, n_iterations)
             m1 += theta1[i]
@@ -141,8 +212,7 @@ cdef class MCFAlgorithm(object):
 
         return [m1,m2]
 
-    def invariant_measure_dict(self, int n_iterations, int ndivs, v=None,
-            str norm='1', verbose=False):
+    def invariant_measure_dict(self, int n_iterations, int ndivs, str norm='1'):
         r"""
         INPUT:
 
@@ -194,9 +264,7 @@ cdef class MCFAlgorithm(object):
         C = <int *> malloc((ndivs+1) * (ndivs+1) * sizeof(unsigned int))
         memset(C, 0, (ndivs+1) * (ndivs+1) * sizeof(unsigned int))
 
-        cdef Point3d P = Point3d_new()
-        Point3d_set_random(P)
-        Point3d_sort(P)        # order (x,y,z) such that x < y < z
+        cdef Point3d P = self._random_point()
 
         # Normalize (x,y,z)
         s = P.x + P.y + P.z
