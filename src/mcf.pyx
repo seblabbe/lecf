@@ -35,7 +35,7 @@ def check_all():
     Check all algorithms available.
     """
     for algo in algorithm_names():
-        print "check %s... "%algo,
+        print "check %s..."%algo,
         c = MCFAlgorithm(algo, check=False)
         c._check()
         c._check()

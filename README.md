@@ -5,10 +5,11 @@ To compile just do
 
     make
 
-You get a lot of warning, but hopefuly you should obtain a running version
-of the library. Launch Python, IPython or Sage and try
+After a lot of compilation you get a running Python module (whose name
+is mcf.so). You can launch Python, IPython or Sage inside the directory
+and try:
 
-    >>> import mpc
+    >>> import mcf
     >>> B = mcf.MCFAlgorithm('brun_mf')
     >>> B
     (multiplicative floor) Brun
@@ -19,8 +20,23 @@ of the library. Launch Python, IPython or Sage and try
     second L. exp : -0.246783   (0.000977)
     ratio         : -0.368712   (0.001664)
 
-The relevant places to look for the code is in src. The instructions for
-each algorithm are contained in src/algorithms. At building time (ie doing
-make) the list of algorithms is generated on the fly. So if you feel in the
-mood you can implement your own algorithm by simply putting in new file there
-and then run make.
+The relevant place to look for the code is the directory src/. The
+instructions for each algorithm are contained in src/algorithms/. At
+building time (ie when make is run) the list of algorithms is generated
+on the fly. So if you feel, you can implement your own algorithm by
+simply writing a new file in src/algorithms/ and then run make.
+
+You can check that your algorithm exists with
+
+    >>> import mcf
+    >>> mcf.algorithm_names()
+    ['brun_mf', brun_mn', 'jacobi_perron', 'selmer']
+
+And check that it works with
+
+    >>> mcf.check_all()
+    check brun_mf... done
+    check brun_mn... done
+    check jacobi_perron... done
+    check selmer... done
+
