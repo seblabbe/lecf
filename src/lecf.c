@@ -1,115 +1,80 @@
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
+/* parameters (might be modified) */
 
+/* perform some check and randomize the values */
+#define ASSERT
+#define RANDOMIZE
 
-// some black magic preprocessor !!
-
-// choose a default algorithm if not overriden with -D compiler option
-#ifndef ALGO_FILE
-#define ALGO_FILE algorithms/jacobi_perron.c
+/* subtle parameter... */
+#ifndef CRITICAL_VALUE
+#define CRITICAL_VALUE  .0001
 #endif
 
-// make a nice input string out of the name
+/* from here: DO NOT TOUCH! */
+/* some black magic preprocessor !! */
+/* make a nice ALGO_INCLUDE from a dirty ALGO_FILE */
 #define MAKESTR(x) #x
 #define XMAKESTR(x) MAKESTR(x)
 #define ALGO_INCLUDE XMAKESTR(ALGO_FILE)
+
+#define XXONE_STEP(X) X ## _one_step
+#define XONE_STEP(X) XXONE_STEP(X)
+#define ONE_STEP XONE_STEP(ALGORITHM_SHORT_NAME)
+
+#define XXGET_LEXP(X) X ## _get_lexp
+#define XGET_LEXP(X) XXGET_LEXP(X)
+#define GET_LEXP XGET_LEXP(ALGORITHM_SHORT_NAME)
 
 #define PREAMBLE
 #include ALGO_INCLUDE
 #undef PREAMBLE
 
-/* perform some check */
-#define ASSERT
-#define RANDOMIZE
-
-#define CRITICAL_VALUE  .0001
-
-void get_lexp(double *theta1, double *theta2, unsigned int nb_experiments);
-
-int main(int argc, char **argv)
-{
-	unsigned int i;
-	unsigned int nb_iterations = 100000;
-	unsigned int nb_experiments = 100;
-	unsigned int seed = (unsigned) time(NULL);
-
-	double *lexp1, *lexp2;
-	double mean,mean1,mean2,stddev,stddev1,stddev2;
-	int opt;
-
-	while((opt = getopt(argc, argv, "e:i:s:")) != -1)
-	{
-		switch(opt)
-		{
-			case 'e':
-				nb_experiments = (unsigned int) atol(optarg);
-				break;
-			case 'i':
-				nb_iterations = (unsigned int) atol(optarg);
-				break;
-			case 's':
-				seed = (unsigned int) atol(optarg);
-				break;
-			default:
-				fprintf(stderr, "Usage: %s [-e nb_experiments] [-i nb_iterations] [-s seed]\n",argv[0]);
-				exit(EXIT_FAILURE);
-		}
-	}
-
-	printf("algorithm: %s\n", ALGORITHM_NAME);
-	printf("nb iterations: %u\n", nb_iterations);
-	printf("nb experiments: %u\n", nb_experiments);
-	printf("seed: %u\n", seed);
-	fflush(stdout);
-
-	srand(seed);
-
-	lexp1 = (double *) malloc(nb_experiments * sizeof(double));
-	lexp2 = (double *) malloc(nb_experiments * sizeof(double));
-
-	for(i=0; i<nb_experiments; ++i)
-	{
-		get_lexp(lexp1 + i, lexp2 + i, nb_iterations);
-		mean1 += lexp1[i];
-		mean2 += lexp2[i];
-		mean += lexp2[i] / lexp1[i];
-	}
-	mean1 /= nb_experiments;
-	mean2 /= nb_experiments;
-	mean /= nb_experiments;
-
-	/* now compute mean and standard deviation */
-	for(i=0; i<nb_experiments; ++i)
-	{
-		stddev1 += (lexp1[i] - mean1) * (lexp1[i] - mean1);
-		stddev2 += (lexp2[i] - mean2) * (lexp2[i] - mean2);
-		stddev  += (lexp2[i]/lexp1[i] - mean) * (lexp2[i]/lexp1[i] - mean);
-	}
-	stddev1 = sqrt(stddev1/(nb_experiments - 1));
-	stddev2 = sqrt(stddev2/(nb_experiments - 1));
-	stddev  = sqrt(stddev/(nb_experiments - 1));
-
-	printf("top L. exp: %f   (%f)\n", mean1, stddev1);
-	printf("scd L. exp: %f   (%f)\n", mean2, stddev2);
-	printf("ratio     : %f   (%f)\n", mean, stddev);
-
-	free(lexp1);
-	free(lexp2);
-
-	return 0;
-
+/* macro for permutations x < y < z */
+#define PERMUTE_xyz            \
+if(y > z)                      \
+{                              \
+	s=z; t=w;                  \
+	z=y; w=v;                  \
+	y=s; v=t;                  \
+}                              \
+if(x > z)                      \
+{                              \
+	s=x; t=u;                  \
+	x=y; u=v;                  \
+	y=z; v=w;                  \
+	z=s; w=t;                  \
+}                              \
+else if(x > y)                 \
+{                              \
+	s=y; t=v;                  \
+	y=x; v=u;                  \
+	x=s; u=t;                  \
 }
 
-inline double drand()
+void ONE_STEP(Point3d P)
 {
-	return (((double) rand()) + (((double) rand())/((double)RAND_MAX))) / ((double) RAND_MAX);
+	double s,t;
+	#define EXTRA_VARIABLES
+	#include ALGO_INCLUDE
+	#undef EXTRA_VARIABLES
+
+	#define ALGORITHM
+	#define x (P->x)
+	#define y (P->y)
+	#define z (P->z)
+	#define u (P->u)
+	#define v (P->v)
+	#define w (P->w)
+	#include ALGO_INCLUDE
+	#undef x
+	#undef y
+	#undef z
+	#undef u
+	#undef v
+	#undef w
+	#undef ALGORITHM
 }
 
-
-void get_lexp(double *lexp1, double *lexp2, unsigned int nb_iterations)
+void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 {
 	double x,y,z,u,v,w;           /*(x,y,z) and (u,v,w) are the two vectors used */
 	double s,t;                   /* temporary double variables  */
@@ -123,12 +88,14 @@ void get_lexp(double *lexp1, double *lexp2, unsigned int nb_iterations)
 	x = drand(); y = drand(); z = drand();
 	u = drand() - .5; v = drand() - .5; w = drand() - .5;
 
+	#ifdef ORDERED
 	/* order and normalize (x,y,z) to get */
-	/*  1) x > y > z > 0                  */
+	/*  1) 0 < x < y < z                  */
 	/*  2) x + y + z = 1                  */
-	if(y > x) {t=x; x=y; y=t;}
-	if(z > x) {t=z; z=y; y=x; x=t;}
-	else if(z > y) {t=y; y=z; z=t;}
+	if(y > z) {t=z; z=y; y=t;}
+	if(x > z) {t=x; x=y; y=z; z=t;}
+	else if(x > y) {t=y; y=x; x=t;}
+	#endif
 
 	#define PREPROCESS
 	#include ALGO_INCLUDE
@@ -155,8 +122,8 @@ void get_lexp(double *lexp1, double *lexp2, unsigned int nb_iterations)
 	{
         /* apply the algorithm on (x,y,z) and apply the dual */
 		/* transformation on (u,v,w).                        */
-#ifdef PERMUTE
-		while(x > CRITICAL_VALUE)
+#ifdef ORDERED
+		while(z > CRITICAL_VALUE)
 #else
 		while((x > CRITICAL_VALUE) || (y > CRITICAL_VALUE) || (z > CRITICAL_VALUE))
 #endif
@@ -179,29 +146,6 @@ void get_lexp(double *lexp1, double *lexp2, unsigned int nb_iterations)
 			    fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
 			    fprintf(stderr, "Error: scal prod <(x,y,z),(u,v,w)> =%f is not zero\n",s);
 			    exit(EXIT_FAILURE);
-			}
-#endif
-
-#ifdef PERMUTE
-			/* permute to get x > y > z */
-			if(y > x)
-			{
-				s=x; t=u;
-				x=y; u=v;
-				y=s; v=t;
-			}
-			if(z > x)
-			{
-				s=z; t=w;
-				z=y; w=v; 
-				y=x; v=u;
-				x=s; u=t;
-			}
-			else if(z > y)
-			{
-				s=y; t=v;
-				y=z; v=w;
-				z=s; w=t;
 			}
 #endif
 

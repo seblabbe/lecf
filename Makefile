@@ -1,10 +1,14 @@
 CFLAGS=-Wall
-ALGORITHMS_SRC=$(wildcard algorithms/*.c)
-ALGORITHMS=$(ALGORITHMS_SRC:algorithms%.c=.%)
+ALGORITHMS_RAW=$(wildcard src/algorithms/*.c)
+ALGORITHMS=$(ALGORITHMS_RAW:src/algorithms%.c=.%)
 
 all: $(ALGORITHMS)
+	@./scripts/make_main_include_file > src/mcf_algorithms.h
+	@echo "#include \"mcf_algorithms.h\"" > src/mcf_algorithms.c
+	@cat build/*.c >> src/mcf_algorithms.c
+	python setup.py build_ext --inplace
 
-%: algorithms/%.c lecf.c
-	@echo $<
-	gcc -D ALGO_FILE=$< $(CFLAGS) -o $@ -lm lecf.c
+%: src/algorithms/%.c src/lecf.c
+	@echo $@
+	gcc -E -D ALGO_FILE=algorithms/$@.c src/lecf.c | grep -v "^#" > build/$@.c
 
