@@ -30,7 +30,25 @@ AUTHORS:
 from libc.stdlib cimport malloc, free
 from libc.string cimport memset
 
+def check_all():
+    r"""
+    Check all algorithms available.
+    """
+    for algo in algorithm_names():
+        print "check %s... "%algo,
+        c = MCFAlgorithm(algo, check=False)
+        c._check()
+        c._check()
+        c._check()
+        print "done"
+
 def project2d(p):
+    r"""
+    Project the point ``p`` (with three cordinates) into the plane.
+
+    TODO: it is stupid to recompute cos(2*pi/3) and sin(2*pi/3) each time the
+    function is called...
+    """
     from math import cos,sin,pi
     c0 = 1.; s0 = 0.
     c1 = cos(2*pi/3); s1 = sin(2*pi/3)
@@ -39,6 +57,9 @@ def project2d(p):
     return (p[0]*c0 + p[1]*c1 + p[2]*c2, p[0]*s0 + p[1]*s1 + p[2]*s2)
 
 def get_side(a, b):
+    r"""
+    routine for ``inside_convex_polygon``
+    """
     x = a[0]*b[1] - a[1]*b[0]
     if x < 0:
         return 0
@@ -50,6 +71,9 @@ def get_side(a, b):
 def inside_convex_polygon(point, vertices):
     r"""
     Check whether ``point`` is inside the convex hull of ``vertices``.
+
+    TODO: implement it in C directly in lekz.c in order to provide further
+    tests when ASSERT is set.
     """
     previous_side = None
     n_vertices = len(vertices)
@@ -73,7 +97,6 @@ def algorithm_names():
         l.append(str(algos[i]))
     return l
 
-# clean
 cdef class MCFAlgorithm(object):
     def __init__(self, name=None, check=True):
 
@@ -107,6 +130,10 @@ cdef class MCFAlgorithm(object):
     def _check(self):
         r"""
         Do some check to test consistency of the algorithm.
+
+        More precisely, the code pick 100 random points and check if they belong
+        to the domain. Pick a random point and iterates 1000 times the algorithm
+        and check.
         """
         cdef Point3d P
         cdef double s
@@ -138,12 +165,11 @@ cdef class MCFAlgorithm(object):
             if s < -0.000001 or s > 0.000001:
                 raise AssertionError("orthogonality not preserved by the algo")
 
-            if i%10 == 9:
-                s = P.x + P.y + P.z
-                P.x /= s; P.y /= s; P.z /= s
+            s = P.x + P.y + P.z
+            P.x /= s; P.y /= s; P.z /= s
 
-                s = P.x * P.u + P.y * P.v + P.z * P.w
-                P.u -= s; P.v -= s; P.w -= s
+            s = P.x * P.u + P.y * P.v + P.z * P.w
+            P.u -= s; P.v -= s; P.w -= s
 
         Point3d_free(&P)
 
