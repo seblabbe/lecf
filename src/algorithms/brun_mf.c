@@ -19,5 +19,6 @@ n = floor(z / y);
 z -= n*y;
 v += n*w;
 
-SORT_xyz
+if(z > x) {PERMUTE_xzy;}   // x,y,z = x,z,y   (and same for dual)
+else {PERMUTE_zxy;}        // x,y,z = z,x,y   (and same for dual)
 #endif

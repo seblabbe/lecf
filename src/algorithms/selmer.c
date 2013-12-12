@@ -13,7 +13,7 @@
 
 #ifdef ALGORITHM
 z -= x;
-u +=  w;
-if(z > x) {PERMUTE_xzy;}   // x,y,z = x,z,y
-else {PERMUTE_zxy;}        // x,z,y = z,x,y
+u += w;
+if(z > x) {PERMUTE_xzy;}   // x,y,z = x,z,y   (and same for dual)
+else {PERMUTE_zxy;}        // x,z,y = z,x,y   (and same for dual)
 #endif

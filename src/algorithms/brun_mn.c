@@ -24,6 +24,6 @@ if(z < 0)
 	w = -w;
 }
 
-if(x < z) {PERMUTE_xzy;}   // x,y,z = x,z,y
-else {PERMUTE_zxy;}        // x,y,z = z,x,y
+if(x < z) {PERMUTE_xzy;}   // x,y,z = x,z,y   (and same for dual)
+else {PERMUTE_zxy;}        // x,y,z = z,x,y   (and same for dual)
 #endif
