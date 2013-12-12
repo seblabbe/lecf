@@ -9,6 +9,6 @@ all: $(ALGORITHMS)
 	python setup.py build_ext --inplace
 
 %: src/algorithms/%.c src/lecf.c
-	@echo $@
+	@if [ ! -d build ]; then mkdir build; fi
 	gcc -E -D ALGO_FILE=algorithms/$@.c src/lecf.c | grep -v "^#" > build/$@.c
 

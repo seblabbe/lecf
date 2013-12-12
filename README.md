@@ -5,13 +5,22 @@ To compile just do
 
     make
 
-And then you get a bunch of executable.
+You get a lot of warning, but hopefuly you should obtain a running version
+of the library. Launch Python, IPython or Sage and try
 
-The relevant places to look at is the repository algorithms which
-contain a bunch of algorithms and lecf.c which is a template to
-generate a C file from the instructions given by an algorithm.
+    >>> import mpc
+    >>> B = mcf.MCFAlgorithm('brun_mf')
+    >>> B
+    (multiplicative floor) Brun
+    >>> lexp = B.lyapunov_exponents()
+    nb experiments: 100
+    nb iterations : 10000
+    top L. exp    : 0.669311   (0.001818)
+    second L. exp : -0.246783   (0.000977)
+    ratio         : -0.368712   (0.001664)
 
-Each file in the repository algorithms/ describe the operation of a
-2-dimensional continued fraction algorithms. If you want to create
-your own MCF, just add a file in that repository and the Makefile
-will take care of it!
+The relevant places to look for the code is in src. The instructions for
+each algorithm are contained in src/algorithms. At building time (ie doing
+make) the list of algorithms is generated on the fly. So if you feel in the
+mood you can implement your own algorithm by simply putting in new file there
+and then run make.
