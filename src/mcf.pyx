@@ -163,7 +163,7 @@ cdef class MCFAlgorithm(object):
             if P.x <= 0 or P.y <= 0 or P.z <= 0:
                 raise AssertionError("one of the coordinate become null after %d steps"%i)
             if s < -0.000001 or s > 0.000001:
-                raise AssertionError("orthogonality not preserved by the algo")
+                raise AssertionError("orthogonality not preserved by the algo after %d steps (scal=%f)"%(i,s))
 
             s = P.x + P.y + P.z
             P.x /= s; P.y /= s; P.z /= s

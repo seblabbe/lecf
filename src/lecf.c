@@ -49,7 +49,7 @@ else if(x > y)           \
 }
 
 #define PERMUTE_yxz {\
-s=x; x=y; y=x;      \
+s=x; x=y; y=s;      \
 s=u; u=v; v=s;}
 
 #define PERMUTE_zyx {\
