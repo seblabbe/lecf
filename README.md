@@ -11,7 +11,7 @@ this is through multidimensional continued fractions. The quality of
 diophantine approximation is measured by the second (normalized) Lyapunov
 exponents of the algorithm which is a real number between -1/2 and 1. If this
 number is negative, then the algorithm is *strongly convergent* and it would be
-*optimal* if it is *-1/2*.  Up to now, there is no optimal algorithm... we are
+*optimal* if it was *-1/2*.  Up to now, there is no optimal algorithm... we are
 still looking for... but there might be none!
 
 Compilation
@@ -60,11 +60,12 @@ And check that it works with
 Details of implementation
 -------------------------
 
-Some files are automatically from the list of algorithms contained in
+Some files are automatically generated from the list of algorithms contained in
 src/algorithms/. Namely src/algorithms\_array.c, src/mcf\_algorithms.h and
 src/mcf\_algorithms.c. The C template used to generate src/mcf\_algorithms.c is
 src/lecf.c and the (python) script to generate the two others is
-scripts/make\_mains\_include\_file. You can find the relevant lines in the Makefile.
+scripts/make\_mains\_include\_file. You can find the relevant lines in the
+Makefile.
 
 Help
 ----
@@ -73,3 +74,4 @@ To be able to compile you need gcc (the GNU C compiler), make and Python
 headers. If you start modifying src/mcf.pyx or src/mcf.pxd then you need
 Cython.
 
+If you have troubles, feel free to e-mail me at vincent.delecroix@labri.fr
