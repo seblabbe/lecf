@@ -168,12 +168,14 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 			{
 				fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
 				fprintf(stderr, "Error: one of the length is 0: x=%f, y=%f, z=%f",x,y,z);
+			        break;
 			}
 			s = x*u + y*v + z*w;
 			if ((s > 0.0001) || (s < -0.0001))
 			{
 			    fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
 			    fprintf(stderr, "Error: scal prod <(x,y,z),(u,v,w)> =%f is not zero\n",s);
+			    break;
 			}
 #endif
 		}
