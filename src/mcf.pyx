@@ -204,8 +204,8 @@ cdef class MCFAlgorithm(object):
         cdef double m1,m2,m
         cdef double stddev1,stddev2,stddev
 
-        assert n_experiments > 1
-        assert n_iterations > 100
+        assert n_iterations > 100, "n_iterations (=%s) must be more than 100" % n_iterations
+        assert n_experiments > 1, "n_experiments (=%s) must be more than 1" % n_experiments
 
         theta1 = <double *> malloc(n_experiments * sizeof(double))
         theta2 = <double *> malloc(n_experiments * sizeof(double))
