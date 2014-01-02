@@ -33,5 +33,5 @@ cdef class MCFAlgorithm(object):
     cdef random_point_type _random_point
     cdef double * _extremal_pts
     cdef unsigned int _extremal_pts_nb
-    cdef str _short_name
-    cdef str _description
+    cdef bytes _short_name
+    cdef bytes _description
