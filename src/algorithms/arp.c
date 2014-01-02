@@ -14,7 +14,7 @@
 #endif
 
 #ifdef ALGORITHM
-if (z > .5){
+if (z > x + y){
 z -= x + y;
 u += w;
 v += w;
@@ -22,7 +22,7 @@ v += w;
 z -= y;
 y -= x;
 v += w;
-u += v;   // no that this v includes the w
+u += v;   // note that this v includes the w
 }
 
 SORT_xyz;
