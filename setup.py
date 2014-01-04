@@ -3,11 +3,12 @@ from distutils.extension import Extension
 
 try:
     import Cython
+    print "Cython version %s found"%Cython.__version__
+    from Cython.Build import cythonize
     USE_CYTHON = True
-    print "using cython"
 except ImportError:
+    print "Warning: Cython version absent or inadapted. We do not cythonize mcf.pyx."
     USE_CYTHON = False
-    print "cython is not present, use the default C-file"
 
 extension = ".pyx" if USE_CYTHON else ".c"
 
@@ -24,7 +25,6 @@ sourcefiles = [
 extensions = [Extension("mcf", sourcefiles)]
 
 if USE_CYTHON:
-    from Cython.Build import cythonize
     extensions = cythonize(extensions)
 
 setup(
