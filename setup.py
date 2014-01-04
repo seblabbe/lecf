@@ -3,7 +3,8 @@ from distutils.extension import Extension
 
 try:
     import Cython
-    print "Cython version %s found"%Cython.__version__
+    from Cython.Compiler.Version import version
+    print "Cython version %s found" % version
     from Cython.Build import cythonize
     USE_CYTHON = True
 except ImportError:
