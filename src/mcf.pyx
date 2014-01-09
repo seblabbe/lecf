@@ -29,6 +29,7 @@ AUTHORS:
 """
 from libc.stdlib cimport malloc, free
 from libc.string cimport memset
+import numpy
 
 def check_all():
     r"""
@@ -136,7 +137,7 @@ cdef class MCFAlgorithm(object):
         and check.
         """
         cdef Point3d P
-        cdef double s
+        cdef double s,t
         cdef int i
 
         dom = map(project2d, self.domain_extremal_pts())
@@ -170,6 +171,17 @@ cdef class MCFAlgorithm(object):
 
             s = P.x * P.u + P.y * P.v + P.z * P.w
             P.u -= s; P.v -= s; P.w -= s
+
+        for _ in range(10):
+            P = self._random_point()
+            P.u = 0.3
+            P.v = 0.3
+            P.w = 0.3
+            s = P.x * P.u + P.y * P.v + P.z * P.w
+            self._one_step(P)
+            t = P.x * P.u + P.y * P.v + P.z * P.w
+            if not (-0.00001 < s - t < 0.00001) :
+                raise AssertionError("scalar product not preserved: %f != %f" % (s,t))
 
         Point3d_free(&P)
 
@@ -210,24 +222,31 @@ cdef class MCFAlgorithm(object):
         theta1 = <double *> malloc(n_experiments * sizeof(double))
         theta2 = <double *> malloc(n_experiments * sizeof(double))
 
+        theta1_list = []
+        theta2_list = []
+        ratio_list = []
+
         m = m1 = m2 = 0
         for i in range(n_experiments):
-            self._get_lexp(theta1 + i, theta2 + i, n_iterations)
-            m1 += theta1[i]
-            m2 += theta2[i]
-            m += theta2[i] / theta1[i]
+            error = self._get_lexp(theta1 + i, theta2 + i, n_iterations)
+            if not error:
+                theta1_list.append(theta1[i])
+                theta2_list.append(theta2[i])
+                ratio_list.append(theta2[i] / theta1[i])
+            else:
+                computed = "t1=%f,t2=%f,ratio=%f" % (theta1[i], theta2[i], theta2[i]/theta1[i])
+                print "Error: Computed values (%s) will be ignored" % computed
 
-        m1 /= n_experiments
-        m2 /= n_experiments
-        m /= n_experiments
+        m1 = numpy.average(theta1_list)
+        m2 = numpy.average(theta2_list)
+        m  = numpy.average(ratio_list)
+        stddev1 = numpy.std(theta1_list)
+        stddev2 = numpy.std(theta2_list)
+        stddev  = numpy.std(ratio_list)
 
         if verbose:
-            stddev1 = stddev2 = stddev = 0
-            for i in range(n_experiments):
-                stddev1 += (theta1[i] - m1) * (theta1[i] - m1)
-                stddev2 += (theta2[i] - m2) * (theta2[i] - m2)
-                stddev += (theta2[i] / theta1[i] - m) * (theta2[i]/theta1[i] - m)
             print "nb experiments: %d"%n_experiments
+            print "nb experiments without error: %d"%len(theta1_list)
             print "nb iterations : %d"%n_iterations
             print "top L. exp    : %f   (%f)"%(m1, stddev1)
             print "second L. exp : %f   (%f)"%(m2, stddev2)
