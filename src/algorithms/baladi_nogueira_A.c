@@ -1,12 +1,7 @@
 /* Algorithm of Baladi and Nogueira                  */
-/* It is a Poincare nearest followed by one step  of */
+/* It is a joacobi nearest followed by one step  of  */
 /* additive Arnoux-Rauzy.                            */
 /* simplex: x < y < 0.5  and z is whatever           */
-/* (x,y,z) -> (x, y - mx, z - nx) or                 */
-/*            (x, (m+1)x- y, z - nx) or              */
-/*            (x, y - mx, (n+1)x - z) or             */
-/*            (x, (m+1)x - y, (n+1)x - z)            */
-/* composed with (x,y,z) -> (x - y - z, y, z)        */
 
 #ifdef PREAMBLE
 #define ALGORITHM_SHORT_NAME baladi_nogueira_A
