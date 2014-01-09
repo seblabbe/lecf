@@ -59,7 +59,7 @@ for algo in sys.argv[1:]:
     nb_pts.append(v.groupdict()['value'])
 
     f1.write("void %s_one_step(Point3d);\n"%short_name)
-    f1.write("void %s_get_lexp(double *, double *, unsigned int);\n"%short_name)
+    f1.write("bool %s_get_lexp(double *, double *, unsigned int);\n"%short_name)
     f1.write("Point3d %s_random_point(void);\n"%short_name)
     f1.write("\n")
 

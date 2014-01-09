@@ -124,13 +124,14 @@ void ONE_STEP(Point3d P)
 	#undef ALGORITHM
 }
 
-void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
+bool GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 {
 	Point3d p;
 	double x,y,z,u,v,w;           /*(x,y,z) and (u,v,w) are the two vectors used */
 	double s;                     /* temporary double variables  */
 	int i;                        /* loop counter */
 	double theta1=0, theta2=0;    /* values of Lyapunov exponents */
+	bool error = false;
 
 	#define EXTRA_VARIABLES
 	#include ALGO_INCLUDE
@@ -148,14 +149,14 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 #endif
 
 	i = 0;
-	while(i < nb_iterations)
+	while(i < nb_iterations && !error)
 	{
         /* apply the algorithm on (x,y,z) and apply the dual */
 		/* transformation on (u,v,w).                        */
 #ifdef ORDERED
-		while(z > CRITICAL_VALUE)
+		while(z > CRITICAL_VALUE && !error)
 #else
-		while((x > CRITICAL_VALUE) || (y > CRITICAL_VALUE) || (z > CRITICAL_VALUE))
+		while(((x > CRITICAL_VALUE) || (y > CRITICAL_VALUE) || (z > CRITICAL_VALUE)) && !error)
 #endif
 		{
 #define ALGORITHM
@@ -167,15 +168,15 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 			if((x <= 0) || (y <= 0) || (z <= 0))
 			{
 				fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
-				fprintf(stderr, "Error: one of the length is 0: x=%f, y=%f, z=%f",x,y,z);
-			        break;
+				fprintf(stderr, "Error: one of the length is <=0: x=%f, y=%f, z=%f\n",x,y,z);
+				error = true;
 			}
 			s = x*u + y*v + z*w;
 			if ((s > 0.0001) || (s < -0.0001))
 			{
 			    fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
 			    fprintf(stderr, "Error: scal prod <(x,y,z),(u,v,w)> =%f is not zero\n",s);
-			    break;
+			    error = true;
 			}
 #endif
 		}
@@ -209,11 +210,16 @@ void GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 		    fprintf(stderr, "Error: After %d-th application of the algorithm.\n",i);
 		    fprintf(stderr, "Error: The renormalization on the vector did not worked.\n");
 		    fprintf(stderr, "Error: We stop otherwise, we get an infinite loop.\n");
-			break;
+		    error = true;
 		}
 #endif
+	}
+	if (error)
+	{
+	fprintf(stderr, "Error: expect bad computation of Lyapuvov exp. for this experiment\n");
 	}
 
 	*lexp1 = theta1 / nb_iterations;
 	*lexp2 = theta2 / nb_iterations;
+	return error;
 }

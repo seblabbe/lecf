@@ -10,7 +10,10 @@ cdef extern from "point3d.h":
     inline void Point3d_copy(Point3d p)
 
 cdef extern from "mcf_template.h":
-    ctypedef void (*get_lexp_type)(double * lexp1, double *, unsigned int nb_iterations)
+    ctypedef enum bool:
+        false = 0
+        true = 1
+    ctypedef bool (*get_lexp_type)(double * lexp1, double *, unsigned int nb_iterations)
     ctypedef void (*one_step_type)(Point3d)
     ctypedef Point3d (*random_point_type)()
 
