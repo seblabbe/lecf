@@ -98,6 +98,46 @@ def algorithm_names():
         l.append(str(algos[i]))
     return l
 
+def compare_algos_for_lyapunov(
+            unsigned int n_iterations=10000,
+            unsigned int n_experiments=100,
+            verbose=False):
+    r"""
+    INPUT:
+
+    - ``n_iterations`` -- integer
+    - ``n_experiments`` -- integer
+    - ``verbose`` -- boolean (default: ``False``)
+
+    OUTPUT:
+
+        list of tuple containing data
+
+    EXAMPLES::
+
+    import mcsage: import mcf
+    sage: rows = mcf.compare_algos_for_lyapunov(10000, 100, verbose=False)
+    sage: table(rows=rows)
+      Algorithm                       #Exp   Theta1 (std)        Theta2 (std)         1-Theta2/Theta1
+      Arnoux-Rauzy Poincare           100    0.44418 (0.01129)   -0.17249 (0.00554)   1.38834273475
+      Baladi-Nogueira                 100    2.32352 (0.01126)   -0.71746 (0.00557)   1.3087815722
+      Baladi-Nogueira Algo A          100    2.32218 (0.00904)   -0.71718 (0.00653)   1.30883974152
+      Baladi-Nogueira Algo B          100    1.28712 (0.00462)   -0.48268 (0.00381)   1.37501099689
+      Baladi-Nogueira modified        100    2.50955 (0.01175)   -0.85272 (0.00696)   1.33978874302
+      (multiplicative floor) Brun     100    0.67044 (0.00416)   -0.24705 (0.00336)   1.36848771
+      (multiplicative nearest) Brun   100    0.85912 (0.00518)   -0.33466 (0.00368)   1.38954005393
+      Jacobi-Perron                   100    1.20151 (0.00939)   -0.44855 (0.00418)   1.37332591435
+      (multiplicative floor) Selmer   100    0.18217 (0.01019)   -0.07077 (0.00423)   1.38848775472
+    """
+    rows = []
+    rows.append(("Algorithm", "#Exp", "Theta1 (std)", "Theta2 (std)", "1-Theta2/Theta1"))
+    for algo in algorithm_names():
+        algo = MCFAlgorithm(algo)
+        nb_ok, theta1, std1, theta2, std2 = algo.lyapunov_exponents(n_iterations, n_experiments, verbose=verbose)
+        rows.append((algo, nb_ok, "%.5f (%.5f)" % (theta1, std1), 
+                                  "%.5f (%.5f)" % (theta2, std2), "%.5f" % 1-theta2/theta1))
+    return rows
+
 cdef class MCFAlgorithm(object):
     def __init__(self, name=None, check=True):
 
@@ -233,7 +273,7 @@ cdef class MCFAlgorithm(object):
                 theta1_list.append(theta1[i])
                 theta2_list.append(theta2[i])
                 ratio_list.append(theta2[i] / theta1[i])
-            else:
+            elif verbose:
                 computed = "t1=%f,t2=%f,ratio=%f" % (theta1[i], theta2[i], theta2[i]/theta1[i])
                 print "Error: Computed values (%s) will be ignored" % computed
 
@@ -255,7 +295,7 @@ cdef class MCFAlgorithm(object):
         free(theta1)
         free(theta2)
 
-        return [m1,m2]
+        return [len(theta1_list), m1, stddev1, m2, stddev2]
 
     def invariant_measure_dict(self, int n_iterations, int ndivs, str norm='1'):
         r"""

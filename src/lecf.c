@@ -167,8 +167,10 @@ bool GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 #ifdef ASSERT
 			if((x <= 0) || (y <= 0) || (z <= 0))
 			{
+                /* occurs to often: pollutes the screen
 				fprintf(stderr, "Error: after %d-th application of algorithm\n",i);
 				fprintf(stderr, "Error: one of the length is <=0: x=%f, y=%f, z=%f\n",x,y,z);
+                */
 				error = true;
 			}
 			s = x*u + y*v + z*w;
@@ -216,7 +218,9 @@ bool GET_LEXP(double *lexp1, double *lexp2, unsigned int nb_iterations)
 	}
 	if (error)
 	{
+    /* occurs to often: pollutes the screen
 	fprintf(stderr, "Error: expect bad computation of Lyapuvov exp. for this experiment\n");
+    */
 	}
 
 	*lexp1 = theta1 / nb_iterations;
