@@ -119,15 +119,15 @@ def compare_algos_for_lyapunov(
     sage: rows = mcf.compare_algos_for_lyapunov(10000, 100, verbose=False)
     sage: table(rows=rows)
       Algorithm                       #Exp   Theta1 (std)        Theta2 (std)         1-Theta2/Theta1
-      Arnoux-Rauzy Poincare           100    0.44418 (0.01129)   -0.17249 (0.00554)   1.38834273475
-      Baladi-Nogueira                 100    2.32352 (0.01126)   -0.71746 (0.00557)   1.3087815722
-      Baladi-Nogueira Algo A          100    2.32218 (0.00904)   -0.71718 (0.00653)   1.30883974152
-      Baladi-Nogueira Algo B          100    1.28712 (0.00462)   -0.48268 (0.00381)   1.37501099689
-      Baladi-Nogueira modified        100    2.50955 (0.01175)   -0.85272 (0.00696)   1.33978874302
-      (multiplicative floor) Brun     100    0.67044 (0.00416)   -0.24705 (0.00336)   1.36848771
-      (multiplicative nearest) Brun   100    0.85912 (0.00518)   -0.33466 (0.00368)   1.38954005393
-      Jacobi-Perron                   100    1.20151 (0.00939)   -0.44855 (0.00418)   1.37332591435
-      (multiplicative floor) Selmer   100    0.18217 (0.01019)   -0.07077 (0.00423)   1.38848775472
+      Arnoux-Rauzy Poincare           100    0.44352 (0.01222)   -0.17270 (0.00556)   1.38938
+      Baladi-Nogueira                 99     2.32379 (0.00978)   -0.71795 (0.00572)   1.30896
+      Baladi-Nogueira Algo A          100    2.32262 (0.00967)   -0.71713 (0.00573)   1.30876
+      Baladi-Nogueira Algo B          100    1.28664 (0.00454)   -0.48263 (0.00395)   1.37510
+      Baladi-Nogueira modified        100    2.51106 (0.01250)   -0.85222 (0.00702)   1.33939
+      (multiplicative floor) Brun     100    0.67010 (0.00463)   -0.24708 (0.00284)   1.36873
+      (multiplicative nearest) Brun   100    0.85992 (0.00517)   -0.33434 (0.00404)   1.38880
+      Jacobi-Perron                   100    1.20121 (0.00872)   -0.44865 (0.00444)   1.37350
+      (multiplicative floor) Selmer   100    0.18323 (0.00784)   -0.07121 (0.00368)   1.38864
     """
     rows = []
     rows.append(("Algorithm", "#Exp", "Theta1 (std)", "Theta2 (std)", "1-Theta2/Theta1"))
@@ -135,7 +135,8 @@ def compare_algos_for_lyapunov(
         algo = MCFAlgorithm(algo)
         nb_ok, theta1, std1, theta2, std2 = algo.lyapunov_exponents(n_iterations, n_experiments, verbose=verbose)
         rows.append((algo, nb_ok, "%.5f (%.5f)" % (theta1, std1), 
-                                  "%.5f (%.5f)" % (theta2, std2), "%.5f" % 1-theta2/theta1))
+                                  "%.5f (%.5f)" % (theta2, std2),
+                                  "%.5f" % (1-theta2/theta1)))
     return rows
 
 cdef class MCFAlgorithm(object):
