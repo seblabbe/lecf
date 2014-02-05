@@ -1,7 +1,7 @@
 /* Algorithm of Baladi and Nogueira                  */
 /* It is a Poincare nearest followed by one step  of */
 /* additive Arnoux-Rauzy.                            */
-/* simplex: x < y,z                                  */
+/* simplex: x < y,z   and   y < 0.5                  */
 /* (x,y,z) -> (x, y - mx, z - nx) or                 */
 /*            (x, (m+1)x- y, z - nx) or              */
 /*            (x, y - mx, (n+1)x - z) or             */
@@ -11,8 +11,8 @@
 #ifdef PREAMBLE
 #define ALGORITHM_SHORT_NAME baladi_nogueira
 #define ALGORITHM_FULL_NAME Baladi-Nogueira
-#define NB_EXTREMAL_PTS 3
-#define EXTREMAL_PTS 0,0,1, 0,1,0, 1,1,1
+#define NB_EXTREMAL_PTS 4
+#define EXTREMAL_PTS 0,0,1, 0,1,1, 1,2,1, 1,1,1
 #endif
 
 #ifdef EXTRA_VARIABLES
