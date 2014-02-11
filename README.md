@@ -75,21 +75,21 @@ And check that it works with::
 Make some comparison::
 
     sage: %time rows = mcf.compare_algos_for_lyapunov(1000000, 100)
-    CPU times: user 108.05 s, sys: 0.24 s, total: 108.29 s
-    Wall time: 108.87 s
+    CPU times: user 106.68 s, sys: 0.21 s, total: 106.89 s
+    Wall time: 107.08 s
     sage: table(rows=rows)
-      Algorithm                       #Exp   Theta1 (std)        Theta2 (std)         1-Theta2/Theta1
-      (multiplicative nearest) Brun   100    0.85865 (0.00049)   -0.33391 (0.00038)   1.38888 (0.00437)
-      Arnoux-Rauzy Poincare           100    0.44337 (0.00153)   -0.17238 (0.00066)   1.38879 (0.01870)
-      (Multi) Arnoux-Rauzy Poincare   100    0.82374 (0.00028)   -0.32020 (0.00030)   1.38872 (0.00327)
-      (multiplicative floor) Selmer   100    0.18275 (0.00103)   -0.07075 (0.00043)   1.38714 (0.03012)
-      Baladi-Nogueira Algo B          100    1.28673 (0.00046)   -0.48250 (0.00036)   1.37498 (0.00292)
-      Jacobi-Perron                   100    1.20057 (0.00089)   -0.44845 (0.00040)   1.37353 (0.00436)
-      (multiplicative floor) Brun     100    0.66952 (0.00039)   -0.24665 (0.00030)   1.36840 (0.00491)
-      (Multi nearest) ARP             100    0.89747 (0.00046)   -0.32310 (0.00030)   1.36001 (0.00403)
-      Baladi-Nogueira modified        95     2.51125 (0.00109)   -0.85330 (0.00071)   1.33979 (0.00373)
-      Baladi-Nogueira Algo A          89     2.32293 (0.00104)   -0.71737 (0.00062)   1.30882 (0.00423)
-      Baladi-Nogueira                 80     2.32296 (0.00098)   -0.71730 (0.00052)   1.30879 (0.00371)
+      Algorithm                  #Exp   Theta1 (std)        Theta2 (std)         1-Theta2/Theta1
+      Brun (multi nearest)       100    0.85859 (0.00054)   -0.33390 (0.00040)   1.38890 (0.00468)
+      ARP (multi)                100    0.82376 (0.00040)   -0.32031 (0.00028)   1.38884 (0.00347)
+      Arnoux-Rauzy Poincare      100    0.44267 (0.00179)   -0.17209 (0.00079)   1.38876 (0.02216)
+      Selmer (multi)             100    0.18270 (0.00102)   -0.07071 (0.00045)   1.38704 (0.03075)
+      Baladi-Nogueira Algo B     100    1.28675 (0.00044)   -0.48254 (0.00037)   1.37500 (0.00296)
+      Jacobi-Perron              100    1.20044 (0.00093)   -0.44841 (0.00042)   1.37354 (0.00459)
+      Brun (multi)               100    0.66941 (0.00040)   -0.24654 (0.00030)   1.36829 (0.00491)
+      ARP (multi nearest)        100    0.89755 (0.00046)   -0.32314 (0.00031)   1.36002 (0.00409)
+      Baladi-Nogueira modified   89     2.51148 (0.00135)   -0.85339 (0.00062)   1.33980 (0.00371)
+      Baladi-Nogueira Algo A     79     2.32297 (0.00105)   -0.71734 (0.00057)   1.30880 (0.00402)
+      Baladi-Nogueira            87     2.32303 (0.00110)   -0.71719 (0.00053)   1.30873 (0.00391)
 
 Details of implementation
 -------------------------

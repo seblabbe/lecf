@@ -6,7 +6,7 @@
 #ifdef PREAMBLE
 #define ORDERED
 #define ALGORITHM_SHORT_NAME selmer
-#define ALGORITHM_FULL_NAME (multiplicative floor) Selmer
+#define ALGORITHM_FULL_NAME Selmer (multi)
 #define NB_EXTREMAL_PTS 3
 #define EXTREMAL_PTS 1,1,2, 0,1,1, 1,1,1
 #endif
