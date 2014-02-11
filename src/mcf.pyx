@@ -111,32 +111,38 @@ def compare_algos_for_lyapunov(
 
     OUTPUT:
 
-        list of tuple containing data
+        list of tuple containing data (sorted decreasingly by 1-Theta2/Theta1)
 
     EXAMPLES::
 
-    import mcsage: import mcf
-    sage: rows = mcf.compare_algos_for_lyapunov(10000, 100, verbose=False)
+    sage: import mcf
+    sage: rows = mcf.compare_algos_for_lyapunov(10000, 100)
     sage: table(rows=rows)
       Algorithm                       #Exp   Theta1 (std)        Theta2 (std)         1-Theta2/Theta1
-      Arnoux-Rauzy Poincare           100    0.44352 (0.01222)   -0.17270 (0.00556)   1.38938
-      Baladi-Nogueira                 99     2.32379 (0.00978)   -0.71795 (0.00572)   1.30896
-      Baladi-Nogueira Algo A          100    2.32262 (0.00967)   -0.71713 (0.00573)   1.30876
-      Baladi-Nogueira Algo B          100    1.28664 (0.00454)   -0.48263 (0.00395)   1.37510
-      Baladi-Nogueira modified        100    2.51106 (0.01250)   -0.85222 (0.00702)   1.33939
-      (multiplicative floor) Brun     100    0.67010 (0.00463)   -0.24708 (0.00284)   1.36873
-      (multiplicative nearest) Brun   100    0.85992 (0.00517)   -0.33434 (0.00404)   1.38880
-      Jacobi-Perron                   100    1.20121 (0.00872)   -0.44865 (0.00444)   1.37350
-      (multiplicative floor) Selmer   100    0.18323 (0.00784)   -0.07121 (0.00368)   1.38864
+      Arnoux-Rauzy Poincare           100    0.44252 (0.01603)   -0.17219 (0.00712)   1.38912 (0.19931)
+      (multiplicative nearest) Brun   100    0.85955 (0.00490)   -0.33433 (0.00354)   1.38897 (0.04184)
+      (Multi) Arnoux-Rauzy Poincare   100    0.82399 (0.00420)   -0.32010 (0.00269)   1.38848 (0.03475)
+      (multiplicative floor) Selmer   100    0.18340 (0.00679)   -0.07089 (0.00297)   1.38653 (0.20417)
+      Baladi-Nogueira Algo B          100    1.28719 (0.00388)   -0.48237 (0.00419)   1.37474 (0.03124)
+      Jacobi-Perron                   100    1.20094 (0.00878)   -0.44870 (0.00427)   1.37363 (0.04502)
+      (multiplicative floor) Brun     100    0.67003 (0.00414)   -0.24626 (0.00333)   1.36754 (0.05354)
+      (Multi nearest) ARP             100    0.89777 (0.00410)   -0.32375 (0.00296)   1.36062 (0.03798)
+      Baladi-Nogueira modified        100    2.51286 (0.01149)   -0.85243 (0.00696)   1.33923 (0.03754)
+      Baladi-Nogueira                 99     2.32372 (0.00990)   -0.71728 (0.00596)   1.30868 (0.04070)
+      Baladi-Nogueira Algo A          100    2.32260 (0.01020)   -0.71668 (0.00557)   1.30857 (0.03943)
+
     """
     rows = []
-    rows.append(("Algorithm", "#Exp", "Theta1 (std)", "Theta2 (std)", "1-Theta2/Theta1"))
     for algo in algorithm_names():
         algo = MCFAlgorithm(algo)
         nb_ok, theta1, std1, theta2, std2 = algo.lyapunov_exponents(n_iterations, n_experiments, verbose=verbose)
+        erreur = (std2*theta1 - std1*theta2) / (theta2 * theta2)
         rows.append((algo, nb_ok, "%.5f (%.5f)" % (theta1, std1), 
                                   "%.5f (%.5f)" % (theta2, std2),
-                                  "%.5f" % (1-theta2/theta1)))
+                                  "%.5f (%.5f)" % (1-theta2/theta1, erreur)))
+    rows.sort(key=lambda d:d[4], reverse=True)
+    header = ("Algorithm", "#Exp", "Theta1 (std)", "Theta2 (std)", "1-Theta2/Theta1")
+    rows.insert(0, header)
     return rows
 
 cdef class MCFAlgorithm(object):
