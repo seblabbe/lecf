@@ -74,21 +74,22 @@ And check that it works with::
 
 Make some comparison::
 
-    sage: import mcf
-    sage: %time rows = mcf.compare_algos_for_lyapunov(1000000, 100, verbose=False)
-    CPU times: user 92.47 s, sys: 0.12 s, total: 92.60 s
-    Wall time: 92.79 s
+    sage: %time rows = mcf.compare_algos_for_lyapunov(1000000, 100)
+    CPU times: user 108.05 s, sys: 0.24 s, total: 108.29 s
+    Wall time: 108.87 s
     sage: table(rows=rows)
       Algorithm                       #Exp   Theta1 (std)        Theta2 (std)         1-Theta2/Theta1
-      Arnoux-Rauzy Poincare           100    0.44279 (0.00176)   -0.17216 (0.00076)   1.38880
-      Baladi-Nogueira                 84     2.32307 (0.00094)   -0.71726 (0.00047)   1.30875
-      Baladi-Nogueira Algo A          81     2.32315 (0.00087)   -0.71721 (0.00054)   1.30872
-      Baladi-Nogueira Algo B          100    1.28671 (0.00045)   -0.48248 (0.00038)   1.37497
-      Baladi-Nogueira modified        91     2.51147 (0.00109)   -0.85344 (0.00061)   1.33982
-      (multiplicative floor) Brun     100    0.66950 (0.00042)   -0.24659 (0.00031)   1.36831
-      (multiplicative nearest) Brun   100    0.85861 (0.00050)   -0.33388 (0.00036)   1.38887
-      Jacobi-Perron                   100    1.20041 (0.00089)   -0.44842 (0.00043)   1.37355
-      (multiplicative floor) Selmer   100    0.18266 (0.00130)   -0.07075 (0.00054)   1.38732
+      (multiplicative nearest) Brun   100    0.85865 (0.00049)   -0.33391 (0.00038)   1.38888 (0.00437)
+      Arnoux-Rauzy Poincare           100    0.44337 (0.00153)   -0.17238 (0.00066)   1.38879 (0.01870)
+      (Multi) Arnoux-Rauzy Poincare   100    0.82374 (0.00028)   -0.32020 (0.00030)   1.38872 (0.00327)
+      (multiplicative floor) Selmer   100    0.18275 (0.00103)   -0.07075 (0.00043)   1.38714 (0.03012)
+      Baladi-Nogueira Algo B          100    1.28673 (0.00046)   -0.48250 (0.00036)   1.37498 (0.00292)
+      Jacobi-Perron                   100    1.20057 (0.00089)   -0.44845 (0.00040)   1.37353 (0.00436)
+      (multiplicative floor) Brun     100    0.66952 (0.00039)   -0.24665 (0.00030)   1.36840 (0.00491)
+      (Multi nearest) ARP             100    0.89747 (0.00046)   -0.32310 (0.00030)   1.36001 (0.00403)
+      Baladi-Nogueira modified        95     2.51125 (0.00109)   -0.85330 (0.00071)   1.33979 (0.00373)
+      Baladi-Nogueira Algo A          89     2.32293 (0.00104)   -0.71737 (0.00062)   1.30882 (0.00423)
+      Baladi-Nogueira                 80     2.32296 (0.00098)   -0.71730 (0.00052)   1.30879 (0.00371)
 
 Details of implementation
 -------------------------
